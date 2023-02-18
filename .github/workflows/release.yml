@@ -52,7 +52,8 @@ jobs:
       - name: Install Rust
         run: rustup update 1.67.1 --no-self-update && rustup default 1.67.1
       - name: Install cargo-dist
-        run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+        #run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+        run: cargo install --path ./cargo-dist
       - name: Create Release
         run: |
           cargo dist manifest --tag=${{ github.ref_name }} --artifacts=all --no-local-paths --output-format=json > dist-manifest.json
@@ -78,17 +79,25 @@ jobs:
         # For these target platforms
         include:
         - os: ubuntu-20.04
+          targets: x86_64-unknown-linux-gnu
           dist-args: --artifacts=global
-          install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+          #install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+          install-dist: cargo install --path ./cargo-dist
         - os: macos-11
-          dist-args: --artifacts=local --target=x86_64-apple-darwin
-          install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+          targets: aarch64-apple-darwin x86_64-apple-darwin
+          dist-args: --artifacts=local --target=aarch64-apple-darwin --target=x86_64-apple-darwin
+          #install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+          install-dist: cargo install --path ./cargo-dist
         - os: ubuntu-20.04
+          targets: x86_64-unknown-linux-gnu
           dist-args: --artifacts=local --target=x86_64-unknown-linux-gnu
-          install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+          #install-dist: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.sh | sh
+          install-dist: cargo install --path ./cargo-dist
         - os: windows-2019
+          targets: x86_64-pc-windows-msvc
           dist-args: --artifacts=local --target=x86_64-pc-windows-msvc
-          install-dist: irm  https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.ps1 | iex
+          #install-dist: irm  https://github.com/axodotdev/cargo-dist/releases/download/v0.0.3-prerelease04/cargo-dist-v0.0.3-prerelease04-installer.ps1 | iex
+          install-dist: cargo install --path ./cargo-dist
 
     runs-on: ${{ matrix.os }}
     env:
@@ -96,7 +105,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
-        run: rustup update 1.67.1 --no-self-update && rustup default 1.67.1
+        run: |
+          rustup update 1.67.1 --no-self-update && rustup default 1.67.1
+          rustup target add ${{ matrix.targets }}
       - name: Install cargo-dist
         run: ${{ matrix.install-dist }}
       - name: Run cargo-dist
